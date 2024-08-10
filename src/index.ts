@@ -141,6 +141,17 @@ app.post('/api/webhooks/:id/:token', async r => {
 	webhook.addEmbed(embed)
 	webhook.addComponent(component)
 
+	if (kv.overrideWebhookUser) {
+		if ('userId' in payload) {
+			const user = await misskeyApi<User>(payload.server, 'users/show', { userId: payload.userId })
+			webhook.setUsername(user.name ?? user.username)
+			if (user.avatarUrl) webhook.setAvatarUrl(user.avatarUrl)
+		} else {
+			webhook.setUsername(instance.shortName ?? instance.name ?? 'Misskey')
+			if (instance.iconUrl) webhook.setAvatarUrl(instance.iconUrl)
+		}
+	}
+
 	try {
 		await webhook.send(channelId, token)
 	} catch (e) {
