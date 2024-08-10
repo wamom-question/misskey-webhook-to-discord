@@ -13,9 +13,17 @@ export function beautifyText(text: string) {
 
 export function getUserText(server: string, user: User) {
 	return beautifyText(`
-		[${user.name ?? user.username}](${server}/@${user.username}${user.host ? `@${user.host}` : ''})
+		${getUsername(server, user)}
 		@${user.username}${user.host ? `@${user.host}` : ''} (${user.id})
 	`)
+}
+
+export function getUsername(server: string, user: User, link = true) {
+	if (link) {
+		return `[${user.name ?? user.username}](${server}/@${user.username}${user.host ? `@${user.host}` : ''})`
+	}
+
+	return user.name ?? user.username
 }
 
 export async function misskeyApi<T>(server: string, endpoint: string, payload?: Record<string, unknown>, ignoreCache = false) {
