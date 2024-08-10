@@ -108,8 +108,10 @@ app.post('/api/webhooks/:id/:token', async r => {
 			if (payload.type === 'abuseReport') {
 				embed.setColor(0xdd2e44)
 				embed.setTitle(i18n.createdAbuseReport)
-				embed.setDescription(i18n.createdAbuseReportDescription(getUsername(payload.server, reporter)))
-				component.addLinkButton(i18n.viewAbuseReport, `${payload.server}/admin/abuses`)
+				embed.setDescription(`${i18n.createdAbuseReportDescription(getUsername(payload.server, reporter))}\n[${i18n.viewAbuseReport}](${payload.server}/admin/abuses)`)
+				// component.addLinkButton(i18n.viewAbuseReport, `${payload.server}/admin/abuses`)
+				// https://discord.com/developers/docs/resources/webhook#execute-webhook
+				// > Requires an application-owned webhook.
 			} else {
 				embed.setColor(0x36d298)
 				embed.setTitle(i18n.resolvedAbuseReport)
