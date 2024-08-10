@@ -13,7 +13,7 @@ export function beautifyText(text: string) {
 
 export function getUserText(server: string, user: User) {
 	return beautifyText(`
-		[${user.name}](${server}/@${user.username}${user.host ? `@${user.host}` : ''})
+		[${user.name ?? user.username}](${server}/@${user.username}${user.host ? `@${user.host}` : ''})
 		@${user.username}${user.host ? `@${user.host}` : ''} (${user.id})
 	`)
 }

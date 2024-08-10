@@ -63,7 +63,7 @@ app.post('/api/webhooks/:id/:token', async r => {
 		case 'unfollow': {
 			embed.setColor(0xcb9a11)
 			embed.setTitle('Unfollow')
-			embed.setDescription(`Unfollowed ${payload.body.user.name}`)
+			embed.setDescription(`Unfollowed ${payload.body.user.name ?? payload.body.user.username}`)
 			embed.setMisskeyUser(payload.body.user)
 			break
 		}
@@ -71,7 +71,7 @@ app.post('/api/webhooks/:id/:token', async r => {
 		case 'follow': {
 			embed.setColor(0x36aed2)
 			embed.setTitle('Follow')
-			embed.setDescription(`Follow ${payload.body.user.name}`)
+			embed.setDescription(`Follow ${payload.body.user.name ?? payload.body.user.username}`)
 			embed.setMisskeyUser(payload.body.user)
 			break
 		}
@@ -79,7 +79,7 @@ app.post('/api/webhooks/:id/:token', async r => {
 		case 'followed': {
 			embed.setColor(0x36aed2)
 			embed.setTitle('Followed')
-			embed.setDescription(`Followed ${payload.body.user.name}`)
+			embed.setDescription(`Followed ${payload.body.user.name ?? payload.body.user.username}`)
 			embed.setMisskeyUser(payload.body.user)
 			break
 		}
@@ -100,11 +100,11 @@ app.post('/api/webhooks/:id/:token', async r => {
 			if (payload.type === 'abuseReport') {
 				embed.setColor(0xdd2e44)
 				embed.setTitle('Created abuse report')
-				embed.setDescription(`Created abuse report by ${reporter.name}\n[View](${payload.server}/admin/abuses)`)
+				embed.setDescription(`Created abuse report by ${reporter.name ?? reporter.username}\n[View](${payload.server}/admin/abuses)`)
 			} else {
 				embed.setColor(0x36d298)
 				embed.setTitle('Resolved abuse report')
-				embed.setDescription(`Resolved abuse report by ${assignee?.name || '???'}`)
+				embed.setDescription(`Resolved abuse report by ${assignee?.name ?? assignee?.username ?? '???'}`)
 			}
 
 			embed.addField('Comment', payload.body.comment, false)
