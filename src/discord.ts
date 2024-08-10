@@ -47,8 +47,8 @@ export class WebhookGenerator {
 			content: this.content,
 			username: this.username,
 			avatar_url: this.avatarUrl,
-			embeds: this.embeds.map(embed => embed.toJSON()),
-			components: this.components.map(component => component.toJSON())
+			embeds: this.embeds.map(x => x.toJSON()),
+			components: this.components.map(x => x.toJSON()).filter(x => x),
 		}
 	}
 
@@ -212,6 +212,7 @@ export class ComponentGenerator {
 	}
 
 	toJSON() {
+		if (this.components.length === 0) return undefined
 		return {
 			type: 1,
 			components: this.components
