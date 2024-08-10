@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { EmbedGenerator } from './discord'
 import { error, misskeyApi, getUserText } from './utils'
+import { getLang } from './i18n'
 import type { MetaLite, User } from 'misskey-js/entities.js'
 import type { MisskeyWebhookPayload } from './types'
 
@@ -24,13 +25,15 @@ app.post('/api/webhooks/:id/:token', async r => {
 	const token = r.req.param('token')
 	if (!token) return r.json(error('Token is required'), 400)
 
+	const i18n = getLang(await r.env.KV.get('lang'))
+
 	const payload = await r.req.json<MisskeyWebhookPayload>()
-	const embed = new EmbedGenerator().setTitle('Unknown')
+	const embed = new EmbedGenerator().setTitle(i18n.unknown)
 
 	switch (payload.type) {
 		case 'note': {
 			embed.setColor(0x007aff)
-			embed.setTitle('Note')
+			embed.setTitle(i18n.note)
 			embed.setDescription(payload.body.note.text)
 			embed.setMisskeyUser(payload.body.note.user)
 			break
@@ -38,7 +41,7 @@ app.post('/api/webhooks/:id/:token', async r => {
 
 		case 'reply': {
 			embed.setColor(0x007aff)
-			embed.setTitle('Reply')
+			embed.setTitle(i18n.reply)
 			embed.setDescription(payload.body.note.text)
 			embed.setMisskeyUser(payload.body.note.user)
 			break
@@ -46,7 +49,7 @@ app.post('/api/webhooks/:id/:token', async r => {
 
 		case 'renote': {
 			embed.setColor(0x36d298)
-			embed.setTitle('Renote')
+			embed.setTitle(i18n.renote)
 			embed.setDescription(payload.body.note.text)
 			embed.setMisskeyUser(payload.body.note.user)
 			break
@@ -54,7 +57,7 @@ app.post('/api/webhooks/:id/:token', async r => {
 
 		case 'mention': {
 			embed.setColor(0x88a6b7)
-			embed.setTitle('Mention')
+			embed.setTitle(i18n.mention)
 			embed.setDescription(payload.body.note.text)
 			embed.setMisskeyUser(payload.body.note.user)
 			break
@@ -62,32 +65,32 @@ app.post('/api/webhooks/:id/:token', async r => {
 
 		case 'unfollow': {
 			embed.setColor(0xcb9a11)
-			embed.setTitle('Unfollow')
-			embed.setDescription(`Unfollowed ${payload.body.user.name ?? payload.body.user.username}`)
+			embed.setTitle(i18n.unfollowed)
+			embed.setDescription(i18n.unfollowedDescription(payload.body.user.name ?? payload.body.user.username))
 			embed.setMisskeyUser(payload.body.user)
 			break
 		}
 
 		case 'follow': {
 			embed.setColor(0x36aed2)
-			embed.setTitle('Follow')
-			embed.setDescription(`Follow ${payload.body.user.name ?? payload.body.user.username}`)
+			embed.setTitle(i18n.follow)
+			embed.setDescription(i18n.followDescription(payload.body.user.name ?? payload.body.user.username))
 			embed.setMisskeyUser(payload.body.user)
 			break
 		}
 
 		case 'followed': {
 			embed.setColor(0x36aed2)
-			embed.setTitle('Followed')
-			embed.setDescription(`Followed ${payload.body.user.name ?? payload.body.user.username}`)
+			embed.setTitle(i18n.followed)
+			embed.setDescription(i18n.followedDescription(payload.body.user.name ?? payload.body.user.username))
 			embed.setMisskeyUser(payload.body.user)
 			break
 		}
 
 		case 'reaction': {
 			embed.setColor(0x36d298)
-			embed.setTitle('Reaction')
-			embed.setDescription('Reaction')
+			embed.setTitle(i18n.reaction)
+			embed.setDescription(i18n.reactionDescription)
 			break
 		}
 
@@ -99,19 +102,19 @@ app.post('/api/webhooks/:id/:token', async r => {
 
 			if (payload.type === 'abuseReport') {
 				embed.setColor(0xdd2e44)
-				embed.setTitle('Created abuse report')
-				embed.setDescription(`Created abuse report by ${reporter.name ?? reporter.username}\n[View](${payload.server}/admin/abuses)`)
+				embed.setTitle(i18n.createdAbuseReport)
+				embed.setDescription(`${i18n.createdAbuseReportDescription(reporter.name ?? reporter.username)}\n[${i18n.view}](${payload.server}/admin/abuses)`)
 			} else {
 				embed.setColor(0x36d298)
-				embed.setTitle('Resolved abuse report')
-				embed.setDescription(`Resolved abuse report by ${assignee?.name ?? assignee?.username ?? '???'}`)
+				embed.setTitle(i18n.resolvedAbuseReport)
+				embed.setDescription(i18n.resolvedAbuseReportDescription(assignee?.name ?? assignee?.username ?? '???'))
 			}
 
-			embed.addField('Comment', payload.body.comment, false)
-			embed.addField('Reporter', getUserText(payload.server, reporter), true)
-			embed.addField('Reported user', getUserText(payload.server, reportedUser), true)
+			embed.addField(i18n.comment, payload.body.comment, false)
+			embed.addField(i18n.reporter, getUserText(payload.server, reporter), true)
+			embed.addField(i18n.reportedUser, getUserText(payload.server, reportedUser), true)
 
-			if (assignee) embed.addField('Assignee', getUserText(payload.server, assignee), true)
+			if (assignee) embed.addField(i18n.assignee, getUserText(payload.server, assignee), true)
 			if (reportedUser.avatarUrl) embed.setThumbnail(reportedUser.avatarUrl)
 
 			break
@@ -119,8 +122,8 @@ app.post('/api/webhooks/:id/:token', async r => {
 
 		case 'userCreated': {
 			embed.setColor(0xcb9a11)
-			embed.setTitle('User created')
-			embed.setDescription(`User created: [@${payload.body.username}](${payload.server}/@${payload.body.username})`)
+			embed.setTitle(i18n.userCreated)
+			embed.setDescription(i18n.userCreatedDescription(`[@${payload.body.username}](${payload.server}/@${payload.body.username})`))
 			break
 		}
 	}
