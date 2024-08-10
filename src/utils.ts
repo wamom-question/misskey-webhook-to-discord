@@ -21,6 +21,7 @@ export function getUserText(server: string, user: User) {
 export async function misskeyApi<T>(server: string, endpoint: string, payload?: Record<string, unknown>, ignoreCache = false) {
 	if (server.endsWith('/')) server = server.slice(0, -1)
 	if (endpoint.startsWith('/')) endpoint = endpoint.slice(1)
+	if (endpoint.endsWith('/')) endpoint = endpoint.slice(0, -1)
 
 	const path = new URL(`${server}/api/${endpoint}`)
 	const cache = caches.default
