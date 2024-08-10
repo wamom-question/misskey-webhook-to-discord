@@ -170,6 +170,7 @@ export class EmbedGenerator {
 }
 
 enum ComponentType {
+	ActionRow = 1,
 	Button = 2,
 }
 
@@ -214,7 +215,7 @@ export class ComponentGenerator {
 	toJSON() {
 		if (this.components.length === 0) return undefined
 		return {
-			type: 1,
+			type: ComponentType.ActionRow,
 			components: this.components
 		}
 	}
