@@ -1,20 +1,19 @@
 import { Hono } from 'hono'
+import { getLang } from './i18n'
+import { getKV } from './kv'
 import { EmbedGenerator } from './discord'
 import { error, misskeyApi, getUserText, getUsername } from './utils'
-import { getLang } from './i18n'
 import type { MetaLite, User } from 'misskey-js/entities.js'
 import type { MisskeyWebhookPayload } from './types'
 
-type Bindings = {
-	KV: KVNamespace;
-}
-
-const app = new Hono<{ Bindings: Bindings }>()
+const app = new Hono()
 
 app.get('/', r => r.redirect('https://github.com/hideki0403/misskey-webhook-to-discord/'))
 app.post('/api/webhooks/:id/:token', async r => {
 	const secret = r.req.header('X-Misskey-Hook-Secret')
-	const misskeyWebhookSecret = await r.env.KV.get('misskeyWebhookSecret')
+	const kv = await getKV()
+
+	const misskeyWebhookSecret = kv.misskeyWebhookSecret
 	if (misskeyWebhookSecret != null && secret !== misskeyWebhookSecret) {
 		return r.json(error('Invalid secret'), 401)
 	}
@@ -25,7 +24,7 @@ app.post('/api/webhooks/:id/:token', async r => {
 	const token = r.req.param('token')
 	if (!token) return r.json(error('Token is required'), 400)
 
-	const i18n = getLang(await r.env.KV.get('lang'))
+	const i18n = getLang(kv.lang)
 
 	const payload = await r.req.json<MisskeyWebhookPayload>()
 	const embed = new EmbedGenerator().setTitle(i18n.unknown)
@@ -150,7 +149,7 @@ app.post('/api/webhooks/:id/:token', async r => {
 
 app.post('/api/purge-cache/:key', async r => {
 	const secret = r.req.header('X-Secret')
-	const webhookSecret = await r.env.KV.get('misskeyWebhookSecret')
+	const webhookSecret = (await getKV()).misskeyWebhookSecret
 	if (webhookSecret != null && secret !== webhookSecret) {
 		return r.json(error('Invalid secret'), 401)
 	}
