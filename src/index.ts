@@ -6,12 +6,16 @@ import { error, misskeyApi, getUserText, getUsername } from './utils'
 import type { MetaLite, User } from 'misskey-js/entities.js'
 import type { MisskeyWebhookPayload } from './types'
 
-const app = new Hono()
+type Bindings = {
+	KV: KVNamespace;
+}
+
+const app = new Hono<{ Bindings: Bindings }>()
 
 app.get('/', r => r.redirect('https://github.com/hideki0403/misskey-webhook-to-discord/'))
 app.post('/api/webhooks/:id/:token', async r => {
 	const secret = r.req.header('X-Misskey-Hook-Secret')
-	const kv = await getKV()
+	const kv = await getKV(r.env.KV)
 
 	const misskeyWebhookSecret = kv.misskeyWebhookSecret
 	if (misskeyWebhookSecret != null && secret !== misskeyWebhookSecret) {
@@ -166,7 +170,7 @@ app.post('/api/webhooks/:id/:token', async r => {
 
 app.post('/api/purge-cache/:key', async r => {
 	const secret = r.req.header('X-Secret')
-	const webhookSecret = (await getKV()).misskeyWebhookSecret
+	const webhookSecret = (await getKV(r.env.KV)).misskeyWebhookSecret
 	if (webhookSecret != null && secret !== webhookSecret) {
 		return r.json(error('Invalid secret'), 401)
 	}

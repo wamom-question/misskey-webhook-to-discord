@@ -1,5 +1,3 @@
-declare const KV: KVNamespace;
-
 const kvs = {
 	misskeyWebhookSecret: null,
 	lang: null,
@@ -10,7 +8,7 @@ type KVS = {
 	[key in keyof typeof kvs]: string | null
 }
 
-export async function getKV() {
+export async function getKV(KV: KVNamespace) {
 	const cache = await KV.get('internal-kv-cache')
 
 	if (cache) {
