@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { getLang } from './i18n'
 import { getKV } from './kv'
-import { WebhookGenerator, EmbedGenerator } from './discord'
+import { WebhookGenerator, EmbedGenerator, ComponentGenerator } from './discord'
 import { error, misskeyApi, getUserText, getUsername } from './utils'
 import type { MetaLite, User } from 'misskey-js/entities.js'
 import type { MisskeyWebhookPayload } from './types'
@@ -27,7 +27,9 @@ app.post('/api/webhooks/:id/:token', async r => {
 	const i18n = getLang(kv.lang)
 
 	const payload = await r.req.json<MisskeyWebhookPayload>()
+	const webhook = new WebhookGenerator()
 	const embed = new EmbedGenerator().setTitle(i18n.unknown)
+	const component = new ComponentGenerator()
 
 	switch (payload.type) {
 		case 'note': {
@@ -102,7 +104,8 @@ app.post('/api/webhooks/:id/:token', async r => {
 			if (payload.type === 'abuseReport') {
 				embed.setColor(0xdd2e44)
 				embed.setTitle(i18n.createdAbuseReport)
-				embed.setDescription(`${i18n.createdAbuseReportDescription(getUsername(payload.server, reporter))}\n[${i18n.view}](${payload.server}/admin/abuses)`)
+				embed.setDescription(i18n.createdAbuseReportDescription(getUsername(payload.server, reporter)))
+				component.addLinkButton(i18n.viewAbuseReport, `${payload.server}/admin/abuses`)
 			} else {
 				embed.setColor(0x36d298)
 				embed.setTitle(i18n.resolvedAbuseReport)
@@ -135,7 +138,8 @@ app.post('/api/webhooks/:id/:token', async r => {
 		icon_url: instance.iconUrl ?? undefined
 	})
 
-	const webhook = new WebhookGenerator().addEmbed(embed)
+	webhook.addEmbed(embed)
+	webhook.addComponent(component)
 
 	try {
 		await webhook.send(channelId, token)
