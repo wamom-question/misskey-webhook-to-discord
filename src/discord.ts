@@ -1,5 +1,68 @@
 import type { User as MisskeyUser } from 'misskey-js/entities.js'
 
+export class WebhookGenerator {
+	private content?: string
+	private username?: string
+	private avatarUrl?: string
+	private embeds: EmbedGenerator[] = []
+	private components: ComponentGenerator[] = []
+
+	setContent(content: string) {
+		this.content = content
+		return this
+	}
+
+	setUsername(username: string) {
+		this.username = username
+		return this
+	}
+
+	setAvatarUrl(avatarUrl: string) {
+		this.avatarUrl = avatarUrl
+		return this
+	}
+
+	addEmbed(embed: EmbedGenerator) {
+		this.embeds.push(embed)
+		return this
+	}
+
+	clearEmbeds() {
+		this.embeds = []
+		return this
+	}
+
+	addComponent(component: ComponentGenerator) {
+		this.components.push(component)
+		return this
+	}
+
+	clearComponents() {
+		this.components = []
+		return this
+	}
+
+	toJSON() {
+		return {
+			content: this.content,
+			username: this.username,
+			avatar_url: this.avatarUrl,
+			embeds: this.embeds.map(embed => embed.toJSON()),
+			components: this.components.map(component => component.toJSON())
+		}
+	}
+
+	async send(channelId: string, token: string) {
+		await fetch(`https://discord.com/api/webhooks/${channelId}/${token}`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(this.toJSON())
+		})
+	}
+}
+
 export class EmbedGenerator {
 	private title?: string
 	private description?: string
@@ -104,16 +167,54 @@ export class EmbedGenerator {
 			fields: this.fields.length > 0 ? this.fields : undefined
 		}
 	}
+}
 
-	async sendWebhook(channelId: string, token: string) {
-		await fetch(`https://discord.com/api/webhooks/${channelId}/${token}`, {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				embeds: [this.toJSON()]
-			})
+enum ComponentType {
+	Button = 2,
+}
+
+export enum ButtonStyle {
+	Primary = 1,
+	Secondary = 2,
+	Success = 3,
+	Danger = 4,
+	Link = 5
+}
+
+export class ComponentGenerator {
+	private components: any[] = []
+
+	addButton(label: string, style: ButtonStyle) {
+		if (this.components.length >= 5) throw new Error('Too many components')
+		this.components.push({
+			type: ComponentType.Button,
+			style,
+			label,
+			custom_id: Math.random().toString(36).slice(-8)
 		})
+		return this
+	}
+
+	addLinkButton(label: string, url: string) {
+		if (this.components.length >= 5) throw new Error('Too many components')
+		this.components.push({
+			type: ComponentType.Button,
+			style: ButtonStyle.Link,
+			label,
+			url
+		})
+		return this
+	}
+
+	clear() {
+		this.components = []
+		return this
+	}
+
+	toJSON() {
+		return {
+			type: 1,
+			components: this.components
+		}
 	}
 }

@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { getLang } from './i18n'
 import { getKV } from './kv'
-import { EmbedGenerator } from './discord'
+import { WebhookGenerator, EmbedGenerator } from './discord'
 import { error, misskeyApi, getUserText, getUsername } from './utils'
 import type { MetaLite, User } from 'misskey-js/entities.js'
 import type { MisskeyWebhookPayload } from './types'
@@ -135,8 +135,10 @@ app.post('/api/webhooks/:id/:token', async r => {
 		icon_url: instance.iconUrl ?? undefined
 	})
 
+	const webhook = new WebhookGenerator().addEmbed(embed)
+
 	try {
-		await embed.sendWebhook(channelId, token)
+		await webhook.send(channelId, token)
 	} catch (e) {
 		console.error(e)
 		return r.json(error('Failed to send webhook. Please check the channel ID and secret.'), 500)
