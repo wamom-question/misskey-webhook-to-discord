@@ -83,6 +83,26 @@ Discordの任意のチャンネルで作成したWebhookURLの`https://discord.c
 以上で設定は完了です。  
 これでMisskeyのWebhookがDiscordに転送されるようになるはずです。
 
+## 追加設定
+KVに以下のキーと値を設定することで、オプションの機能を設定できます。  
+
+> [!NOTE]
+> 設定変更後はKVの`internal-kv-cache`を削除してください。  
+> 削除をしなかった場合は設定が反映されるまで最長で1週間程度かかる場合があります。
+
+### 言語設定
+送信されるメッセージの言語を設定します。  
+- Key: `lang`
+- Value: 
+  - English: `en_us`
+  - Japanese: `ja_jp`
+
+### Discordのユーザー名/アイコンの自動設定
+Misskeyのユーザー(またはサーバー)アイコンをDiscordのユーザー名/アイコンとして使用します。  
+この設定はKeyが存在すると有効、存在しないと無効になります。
+- Key: `overrideWebhookUser`
+- Value: (任意)
+
 ## マイグレーション
 ### v1.0.0 -> v2.0.0
 - KVの`discordWebhookUrl`は使用されなくなりました  
