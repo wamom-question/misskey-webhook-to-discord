@@ -6,4 +6,4 @@ compatibility_flags = ["nodejs_compat"]
 
 [[kv_namespaces]]
 binding = "KV"
-id = "1091c85365ab4b588f595adb5d136f66"
+id = "cc39cd89d7f748b7a4ce58eb186ccba7"
